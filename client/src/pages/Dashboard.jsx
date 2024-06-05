@@ -4,6 +4,7 @@ import {
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
   MdKeyboardDoubleArrowUp,
+  MdKeyboardCapslock,
 } from "react-icons/md";
 import { LuClipboardEdit } from "react-icons/lu";
 import { FaNewspaper, FaUsers } from "react-icons/fa";
@@ -20,6 +21,7 @@ const TaskTable = ({ tasks }) => {
     high: <MdKeyboardDoubleArrowUp />,
     low: <MdKeyboardArrowDown />,
     medium: <MdKeyboardArrowUp />,
+    normal: <MdKeyboardCapslock />,
   };
 
   const TableHeader = () => (
