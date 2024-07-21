@@ -14,3 +14,4 @@ const noticeSchema = new Schema(
 const Notice = mongoose.model("Notice", noticeSchema);
 
 export default Notice;
+a;
