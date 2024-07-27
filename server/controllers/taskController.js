@@ -77,9 +77,7 @@ export const duplicateTask = async (req, res) => {
       .status(200)
       .json({ status: true, message: "Task Duplicated Successfully." });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ status: false, message: "Invalid user data" });
+    return res.status(400).json({ status: false, message: error.message });
   }
 };
 
@@ -105,9 +103,7 @@ export const postTaskActivity = async (req, res) => {
       .status(200)
       .json({ status: true, message: "Activities Posted Successfully." });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ status: false, message: "Invalid user data" });
+    return res.status(400).json({ status: false, message: error.message });
   }
 };
 
@@ -175,9 +171,7 @@ export const dashboardStatistics = async (req, res) => {
 
     res.status(200).json({ status: true, ...summary, message: "Success" });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ status: false, message: "Invalid user data" });
+    return res.status(400).json({ status: false, message: error.message });
   }
 };
 
@@ -205,9 +199,7 @@ export const getTasks = async (req, res) => {
       tasks,
     });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ status: false, message: "Invalid user data" });
+    return res.status(400).json({ status: false, message: error.message });
   }
 };
 
@@ -227,26 +219,76 @@ export const getTask = async (req, res) => {
 
     res.status(200).json({ status: true, task });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ status: false, message: "Invalid user data" });
+    return res.status(400).json({ status: false, message: error.message });
   }
 };
 
-// export const createTask = async (req, res) => {
-//   try {
-//   } catch (error) {
-//     return res
-//       .status(400)
-//       .json({ status: false, message: "Invalid user data" });
-//   }
-// };
+export const createSubTask = async (req, res) => {
+  try {
+    const { title, tag, date } = req.body;
+    const { id } = req.params;
 
-// export const createTask = async (req, res) => {
-//   try {
-//   } catch (error) {
-//     return res
-//       .status(400)
-//       .json({ status: false, message: "Invalid user data" });
-//   }
-// };
+    const newSubTask = { title, tag, date };
+
+    const task = await Task.findById(id);
+
+    task.subTasks.push(newSubTask);
+
+    await task.save();
+
+    res
+      .status(200)
+      .json({ status: true, message: "Sub Task Added Successfully" });
+  } catch (error) {
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, date, team, stage, priority, assets } = req.body;
+
+    const task = await Task.findById(id);
+
+    task.title = title;
+    task.date = date;
+    task.team = team;
+    task.stage = stage.toLowerCase();
+    task.priority = priority.toLowerCase();
+    task.assets = assets;
+
+    await task.save();
+
+    res
+      .status(200)
+      .json({ status: true, message: "Task Updated Successfully" });
+  } catch (error) {
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const trashTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.findById(id);
+
+    task.isTrashed = true;
+
+    await task.save();
+
+    res.status(200).json({
+      status: true,
+      message: "Task Trashed Succesfully.",
+    });
+  } catch (error) {
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const deleteRestoreTask = async (req, res) => {
+  try {
+  } catch (error) {
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
