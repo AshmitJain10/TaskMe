@@ -288,6 +288,29 @@ export const trashTask = async (req, res) => {
 
 export const deleteRestoreTask = async (req, res) => {
   try {
+    const { id } = req.params;
+    const { actionType } = req.query;
+
+    if (actionType === "delete") {
+      await Task.findByIdAndDelete(id);
+    } else if (actionType === "deleteAll") {
+      await Task.deleteMany({ isTrashed: true });
+    } else if (actionType === "restore") {
+      const resp = await Task.findById(id);
+
+      resp.isTrashed = false;
+      resp.save();
+    } else if (actionType === "restoreAll") {
+      await Task.updateMany(
+        { isTrashed: true },
+        { $set: { isTrashed: false } }
+      );
+    }
+
+    res.status(200).json({
+      status: true,
+      message: "Operation Performed Successfully",
+    });
   } catch (error) {
     return res.status(400).json({ status: false, message: error.message });
   }
