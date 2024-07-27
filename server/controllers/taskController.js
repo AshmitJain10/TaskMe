@@ -1,5 +1,6 @@
 import Notice from "../models/notification.js";
 import Task from "../models/task.js";
+import User from "../models/user.js";
 
 export const createTask = async (req, res) => {
   try {
@@ -75,6 +76,156 @@ export const duplicateTask = async (req, res) => {
     res
       .status(200)
       .json({ status: true, message: "Task Duplicated Successfully." });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ status: false, message: "Invalid user data" });
+  }
+};
+
+export const postTaskActivity = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.user;
+    const { type, activity } = req.body;
+
+    const task = await Task.findById(id);
+
+    const data = {
+      type,
+      activity,
+      by: userId,
+    };
+
+    task.activities.push(data);
+
+    await task.save();
+
+    res
+      .status(200)
+      .json({ status: true, message: "Activities Posted Successfully." });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ status: false, message: "Invalid user data" });
+  }
+};
+
+export const dashboardStatistics = async (req, res) => {
+  try {
+    const { userId, isAdmin } = req.user;
+
+    const allTasks = isAdmin
+      ? await Task.find({
+          isTrashed: false,
+        })
+          .populate({
+            path: "team",
+            select: "name role title email",
+          })
+          .sort({ _id: -1 })
+      : await Task.find({
+          isTrashed: false,
+          team: { $all: [userId] },
+        })
+          .populate({
+            path: "team",
+            select: "name role title email",
+          })
+          .sort({ _id: -1 });
+
+    const users = await User.find({ isActive: true })
+      .select("name title role isAdmin createdAt")
+      .limit(10)
+      .sort({ _id: -1 });
+
+    const groupTasks = allTasks.reduce((result, task) => {
+      const stage = task.stage;
+
+      if (!result[stage]) {
+        result[stage] = 1;
+      } else {
+        result[stage] += 1;
+      }
+
+      return result;
+    }, {});
+
+    //Grp tasks by priority
+    const groupData = Object.entries(
+      allTasks.reduce((result, task) => {
+        const { priority } = task;
+
+        result[priority] = (result[priority] || 0) + 1;
+        return result;
+      }, {})
+    ).map(([name, total]) => ({ name, total }));
+
+    //Calculate Total Tasks
+    const totalTasks = allTasks?.length;
+    const last10Task = allTasks?.slice(0, 10);
+
+    const summary = {
+      totalTasks,
+      last10Task,
+      users: isAdmin ? users : [],
+      tasks: groupTasks,
+      graphData: groupData,
+    };
+
+    res.status(200).json({ status: true, ...summary, message: "Success" });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ status: false, message: "Invalid user data" });
+  }
+};
+
+export const getTasks = async (req, res) => {
+  try {
+    const { stage, isTrashed } = req.query;
+
+    let query = { isTrashed: isTrashed ? true : false };
+
+    if (stage) {
+      query.stage = stage;
+    }
+
+    let queryResult = Task.find(query)
+      .populate({
+        path: "team",
+        select: "name title email",
+      })
+      .sort({ _id: -1 });
+
+    const tasks = await queryResult;
+
+    res.status(200).json({
+      status: true,
+      tasks,
+    });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ status: false, message: "Invalid user data" });
+  }
+};
+
+export const getTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.findById(id)
+      .populate({
+        path: "team",
+        select: "team role title email",
+      })
+      .populate({
+        path: "activities.by",
+        select: "name",
+      })
+      .sort({ _id: -1 });
+
+    res.status(200).json({ status: true, task });
   } catch (error) {
     return res
       .status(400)
