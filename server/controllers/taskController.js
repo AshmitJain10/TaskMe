@@ -40,14 +40,47 @@ export const createTask = async (req, res) => {
   }
 };
 
-// export const createTask = async (req, res) => {
-//   try {
-//   } catch (error) {
-//     return res
-//       .status(400)
-//       .json({ status: false, message: "Invalid user data" });
-//   }
-// };
+export const duplicateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const task = await Task.findById(id);
+
+    const newTask = await Task.create({
+      ...task,
+      title: task.title + "Duplicate",
+    });
+
+    newTask.team = task.team;
+    newTask.priority = task.priority;
+    newTask.subTasks = task.subTasks;
+    newTask.assets = task.assets;
+    newTask.stage = task.stage;
+
+    await newTask.save();
+
+    text =
+      text +
+      ` The task priority is set as ${
+        task.priority
+      } priority, so check and act accordingly. The task date is ${task.date.toDateString()}.
+      HAPPY TASKING!!`;
+
+    await Notice.create({
+      team,
+      text,
+      task: newTask._id,
+    });
+
+    res
+      .status(200)
+      .json({ status: true, message: "Task Duplicated Successfully." });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ status: false, message: "Invalid user data" });
+  }
+};
 
 // export const createTask = async (req, res) => {
 //   try {
