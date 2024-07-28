@@ -40,7 +40,7 @@ const taskSchema = new Schema(
       },
     ],
     assets: [String],
-    team: [{ type: Schema.Types.ObjectId, ref: "Users" }],
+    team: [{ type: Schema.Types.ObjectId, ref: "User" }],
     isTrashed: { type: Boolean, default: false },
   },
   { timestamps: true }

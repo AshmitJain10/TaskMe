@@ -4,7 +4,8 @@ import { createJWT } from "../utils/index.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, passowrd, isAdmin, role, title } = req.body;
+    const { name, email, password, isAdmin, role, title } = req.body;
+    console.log(req.body);
 
     const userExist = await User.findOne({ email });
 
@@ -17,7 +18,7 @@ export const registerUser = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      passowrd,
+      password,
       isAdmin,
       role,
       title,
@@ -33,8 +34,10 @@ export const registerUser = async (req, res) => {
         .json({ status: false, message: "Invalid User Data" });
     }
   } catch (error) {
+    console.log(error);
+
     return res
-      .status(400)
+      .status(404)
       .json({ status: false, message: "Invalid user data" });
   }
 };
@@ -72,6 +75,7 @@ export const loginUser = async (req, res) => {
         .json({ status: false, message: "Invalid email or password" });
     }
   } catch (error) {
+    console.log(error);
     return res
       .status(400)
       .json({ status: false, message: "Invalid user data" });
@@ -85,7 +89,7 @@ export const logoutUser = async (req, res) => {
       expires: new Date(0),
     });
 
-    res.status(200).json({ message: "Logput Successful" });
+    res.status(200).json({ message: "Logout Successful" });
   } catch (error) {
     return res
       .status(400)
