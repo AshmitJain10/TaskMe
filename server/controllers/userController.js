@@ -143,7 +143,7 @@ export const updateUserProfile = async (req, res) => {
       user.title = req.body.title || user.title;
       user.role = req.body.role || user.role;
 
-      const updatedUser = await User.save();
+      const updatedUser = await user.save();
       user.password = undefined;
 
       res.status(201).json({
